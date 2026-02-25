@@ -7,6 +7,8 @@ interface CapitalGrowthStore {
   setAllRates: (rate: number) => void;
   resetRates: () => void;
   setDefaultRate: (rate: number) => void;
+  resetAll: () => void;
+  hydrateGrowthRates: (rates: number[], defaultRate: number) => void;
 }
 
 const DEFAULT_GROWTH_RATE = 5;
@@ -28,4 +30,8 @@ export const useCapitalGrowthStore = create<CapitalGrowthStore>((set) => ({
     })),
   setDefaultRate: (rate) =>
     set({ defaultRate: rate, growthRates: Array(30).fill(rate) }),
+  resetAll: () =>
+    set({ growthRates: Array(30).fill(DEFAULT_GROWTH_RATE), defaultRate: DEFAULT_GROWTH_RATE }),
+  hydrateGrowthRates: (rates, defaultRate) =>
+    set({ growthRates: rates, defaultRate }),
 }));
