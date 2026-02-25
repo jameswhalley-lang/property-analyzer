@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import * as cheerio from 'cheerio';
-import { getDb } from '../../db/index';
-import { scrapeCache } from '../../db/schema';
+import { getDb } from '../../db/index.js';
+import { scrapeCache } from '../../db/schema.js';
 import { eq } from 'drizzle-orm';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
