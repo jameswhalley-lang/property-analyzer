@@ -1,4 +1,5 @@
 import type { CostInputs } from '@/types/financial';
+import type { Renovation } from '@/types/renovation';
 
 export interface CashflowResult {
   netRentalIncome: number;
@@ -59,6 +60,7 @@ export interface CashflowYearProjection {
   netRentalIncome: number;
   totalCosts: number;
   mortgageRepayment: number;
+  renovationCost: number;
   annualCashflow: number;
   cumulativeCashflow: number;
 }
@@ -74,11 +76,15 @@ export function calculateCashflowProjection(
   baseTotalCosts: number,
   annualMortgage: number,
   rentalGrowthRates: number[],
-  costGrowthRates: number[]
+  costGrowthRates: number[],
+  renovations: Renovation[] = []
 ): CashflowYearProjection[] {
   const projections: CashflowYearProjection[] = [];
 
-  const year0Cashflow = baseNetIncome - baseTotalCosts - annualMortgage;
+  const year0RenoCost = renovations
+    .filter((r) => r.year === 0)
+    .reduce((sum, r) => sum + r.cost, 0);
+  const year0Cashflow = baseNetIncome - baseTotalCosts - annualMortgage - year0RenoCost;
   projections.push({
     year: 0,
     rentalGrowthRate: 0,
@@ -86,6 +92,7 @@ export function calculateCashflowProjection(
     netRentalIncome: baseNetIncome,
     totalCosts: baseTotalCosts,
     mortgageRepayment: annualMortgage,
+    renovationCost: year0RenoCost,
     annualCashflow: year0Cashflow,
     cumulativeCashflow: year0Cashflow,
   });
@@ -95,21 +102,28 @@ export function calculateCashflowProjection(
   let cumulative = year0Cashflow;
 
   for (let i = 0; i < 30; i++) {
+    const year = i + 1;
     const rentalRate = rentalGrowthRates[i] ?? 0;
     const costRate = costGrowthRates[i] ?? 0;
 
     currentIncome = currentIncome * (1 + rentalRate / 100);
     currentCosts = currentCosts * (1 + costRate / 100);
-    const annual = currentIncome - currentCosts - annualMortgage;
+
+    const yearRenoCost = renovations
+      .filter((r) => r.year === year)
+      .reduce((sum, r) => sum + r.cost, 0);
+
+    const annual = currentIncome - currentCosts - annualMortgage - yearRenoCost;
     cumulative += annual;
 
     projections.push({
-      year: i + 1,
+      year,
       rentalGrowthRate: rentalRate,
       costGrowthRate: costRate,
       netRentalIncome: currentIncome,
       totalCosts: currentCosts,
       mortgageRepayment: annualMortgage,
+      renovationCost: yearRenoCost,
       annualCashflow: annual,
       cumulativeCashflow: cumulative,
     });

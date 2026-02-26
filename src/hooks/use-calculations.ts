@@ -34,15 +34,24 @@ export function useCalculations() {
       mortgage.conveyancing
     );
 
+    // Include year-0 renovation nightly rate impacts in base rental income
+    const year0NightlyBoost = renovations
+      .filter((r) => r.year === 0)
+      .reduce((sum, r) => sum + r.nightlyRateImpact, 0);
+
     const rentalIncome = calculateRentalIncome(
-      income.nightlyRate,
+      income.nightlyRate + year0NightlyBoost,
       income.occupancyRate,
       income.airbnbHostFee,
       income.cleaningFeePerVisit,
       income.managementFee
     );
 
-    const totalInvestment = mortgageCalc.depositRequired;
+    // Include year-0 renovation costs in total investment
+    const year0RenovationCost = renovations
+      .filter((r) => r.year === 0)
+      .reduce((sum, r) => sum + r.cost, 0);
+    const totalInvestment = mortgageCalc.depositRequired + year0RenovationCost;
 
     const cashflow = calculateCashflow(
       rentalIncome.netIncome,
@@ -60,7 +69,8 @@ export function useCalculations() {
       mortgageCalc.loanAmount,
       mortgage.interestRate,
       mortgage.loanTermYears,
-      rentalIncome.netIncome
+      rentalIncome.netIncome,
+      rentalGrowthRates
     );
 
     const growthSummary = calculateGrowthSummary(projections);
@@ -70,7 +80,8 @@ export function useCalculations() {
       cashflow.totalAnnualCosts,
       mortgageCalc.annualRepayment,
       rentalGrowthRates,
-      costGrowthRates
+      costGrowthRates,
+      renovations
     );
 
     return {

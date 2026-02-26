@@ -9,11 +9,13 @@ export function calculateCapitalGrowthProjection(
   loanAmount: number,
   interestRate: number,
   loanTermYears: number,
-  annualNetRentalIncome: number
+  annualNetRentalIncome: number,
+  rentalGrowthRates: number[] = []
 ): YearProjection[] {
   const projections: YearProjection[] = [];
   let currentValue = purchasePrice;
   let cumulativeRentalIncome = 0;
+  let currentRentalIncome = annualNetRentalIncome;
 
   for (let year = 0; year <= 30; year++) {
     const loanBalance = calculateRemainingBalance(
@@ -30,10 +32,17 @@ export function calculateCapitalGrowthProjection(
       0
     );
 
-    if (year > 0) {
-      const rate = growthRates[year - 1] ?? 5; // default 5% if missing
+    if (year === 0) {
+      // Apply year-0 renovation uplift at purchase
+      currentValue += renovationUplift;
+    } else {
+      const rate = growthRates[year - 1] ?? 5;
       currentValue = currentValue * (1 + rate / 100) + renovationUplift;
-      cumulativeRentalIncome += annualNetRentalIncome;
+
+      // Grow rental income by the rental growth rate
+      const rentalRate = rentalGrowthRates[year - 1] ?? 0;
+      currentRentalIncome *= (1 + rentalRate / 100);
+      cumulativeRentalIncome += currentRentalIncome;
     }
 
     projections.push({

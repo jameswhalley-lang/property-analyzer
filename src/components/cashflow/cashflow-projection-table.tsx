@@ -99,6 +99,7 @@ export function CashflowProjectionTable() {
               <TableHead className="w-28">Cost Growth %</TableHead>
               <TableHead className="text-right">Net Income</TableHead>
               <TableHead className="text-right">Total Costs</TableHead>
+              <TableHead className="text-right">Reno Cost</TableHead>
               <TableHead className="text-right">Annual Cashflow</TableHead>
             </TableRow>
           </TableHeader>
@@ -135,6 +136,11 @@ export function CashflowProjectionTable() {
                 </TableCell>
                 <TableCell className="text-right tabular-nums">
                   {formatCurrency(projection.totalCosts)}
+                </TableCell>
+                <TableCell className="text-right tabular-nums">
+                  {projection.renovationCost > 0
+                    ? formatCurrency(projection.renovationCost)
+                    : '—'}
                 </TableCell>
                 <TableCell
                   className={`text-right tabular-nums font-medium ${
