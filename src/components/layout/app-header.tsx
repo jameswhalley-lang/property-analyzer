@@ -16,6 +16,7 @@ import { usePropertyStore } from '@/stores/property-store';
 import { useFinancialStore } from '@/stores/financial-store';
 import { useRenovationStore } from '@/stores/renovation-store';
 import { useCapitalGrowthStore } from '@/stores/capital-growth-store';
+import { useCashflowProjectionStore } from '@/stores/cashflow-projection-store';
 
 interface AppHeaderProps {
   onNewAnalysis: () => void;
@@ -33,6 +34,7 @@ export function AppHeader({ onNewAnalysis }: AppHeaderProps) {
     useFinancialStore.getState().resetFinancials();
     useRenovationStore.getState().clearRenovations();
     useCapitalGrowthStore.getState().resetAll();
+    useCashflowProjectionStore.getState().resetAll();
     onNewAnalysis();
   }
 
@@ -46,6 +48,7 @@ export function AppHeader({ onNewAnalysis }: AppHeaderProps) {
     const financial = useFinancialStore.getState();
     const renovations = useRenovationStore.getState().renovations;
     const growth = useCapitalGrowthStore.getState();
+    const cashflowProjection = useCashflowProjectionStore.getState();
 
     saveAnalysis.mutate(
       {
@@ -73,6 +76,10 @@ export function AppHeader({ onNewAnalysis }: AppHeaderProps) {
         growthRates: {
           growthRates: growth.growthRates,
           defaultRate: growth.defaultRate,
+        },
+        cashflowProjection: {
+          rentalGrowthRates: cashflowProjection.rentalGrowthRates,
+          costGrowthRates: cashflowProjection.costGrowthRates,
         },
       },
       {

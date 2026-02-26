@@ -24,6 +24,7 @@ import { usePropertyStore } from '@/stores/property-store';
 import { useFinancialStore } from '@/stores/financial-store';
 import { useRenovationStore } from '@/stores/renovation-store';
 import { useCapitalGrowthStore } from '@/stores/capital-growth-store';
+import { useCashflowProjectionStore } from '@/stores/cashflow-projection-store';
 import type { Renovation } from '@/types/renovation';
 
 interface SavedPropertiesViewProps {
@@ -69,6 +70,12 @@ export function SavedPropertiesView({ onLoaded }: SavedPropertiesViewProps) {
       if (result.growthRates) {
         const gr = result.growthRates as { growthRates: number[]; defaultRate: number };
         useCapitalGrowthStore.getState().hydrateGrowthRates(gr.growthRates, gr.defaultRate);
+      }
+
+      // Hydrate cashflow projection store
+      if (result.cashflowProjection) {
+        const cp = result.cashflowProjection as { rentalGrowthRates: number[]; costGrowthRates: number[] };
+        useCashflowProjectionStore.getState().hydrateRates(cp.rentalGrowthRates, cp.costGrowthRates);
       }
 
       onLoaded();

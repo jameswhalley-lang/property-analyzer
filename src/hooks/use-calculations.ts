@@ -6,7 +6,8 @@ import { useCapitalGrowthStore } from '@/stores/capital-growth-store';
 import { calculateStampDuty } from '@/lib/calculations/stamp-duty';
 import { calculateMortgage } from '@/lib/calculations/mortgage';
 import { calculateRentalIncome } from '@/lib/calculations/rental-income';
-import { calculateCashflow } from '@/lib/calculations/cashflow';
+import { calculateCashflow, calculateCashflowProjection } from '@/lib/calculations/cashflow';
+import { useCashflowProjectionStore } from '@/stores/cashflow-projection-store';
 import {
   calculateCapitalGrowthProjection,
   calculateGrowthSummary,
@@ -17,6 +18,7 @@ export function useCalculations() {
   const { mortgage, income, costs } = useFinancialStore();
   const { renovations } = useRenovationStore();
   const { growthRates } = useCapitalGrowthStore();
+  const { rentalGrowthRates, costGrowthRates } = useCashflowProjectionStore();
 
   return useMemo(() => {
     const stampDuty =
@@ -63,6 +65,14 @@ export function useCalculations() {
 
     const growthSummary = calculateGrowthSummary(projections);
 
+    const cashflowProjections = calculateCashflowProjection(
+      rentalIncome.netIncome,
+      cashflow.totalAnnualCosts,
+      mortgageCalc.annualRepayment,
+      rentalGrowthRates,
+      costGrowthRates
+    );
+
     return {
       stampDuty,
       mortgage: mortgageCalc,
@@ -71,6 +81,7 @@ export function useCalculations() {
       projections,
       growthSummary,
       totalInvestment,
+      cashflowProjections,
     };
-  }, [property, mortgage, income, costs, renovations, growthRates]);
+  }, [property, mortgage, income, costs, renovations, growthRates, rentalGrowthRates, costGrowthRates]);
 }

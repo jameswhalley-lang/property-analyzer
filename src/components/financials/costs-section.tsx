@@ -1,15 +1,19 @@
 import { useFinancialStore } from '@/stores/financial-store';
+import { useCashflowProjectionStore } from '@/stores/cashflow-projection-store';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { EditableField } from '@/components/shared/editable-field';
+import { PercentageInput } from '@/components/shared/percentage-input';
 import { COST_LABELS, DEFAULT_COST_RANGES } from '@/lib/data/cost-defaults';
 import { formatCurrency } from '@/lib/format';
+import { computeCAGR } from '@/lib/calculations/cashflow';
 import type { CostInputs } from '@/types/financial';
 
 const COST_KEYS = Object.keys(COST_LABELS) as (keyof CostInputs)[];
 
 export function CostsSection() {
   const { costs, setCost } = useFinancialStore();
+  const { costGrowthRates, setAllCostGrowthRates } = useCashflowProjectionStore();
 
   const totalAnnualCosts = COST_KEYS.reduce(
     (sum, key) => sum + (costs[key] || 0),
@@ -47,6 +51,16 @@ export function CostsSection() {
             {formatCurrency(totalAnnualCosts)}
           </span>
         </div>
+
+        <PercentageInput
+          label="Cost Escalation (CAGR)"
+          value={Math.round(computeCAGR(costGrowthRates) * 100) / 100}
+          onChange={(value) => setAllCostGrowthRates(value)}
+          min={-10}
+          max={20}
+          step={0.1}
+          decimals={2}
+        />
       </CardContent>
     </Card>
   );

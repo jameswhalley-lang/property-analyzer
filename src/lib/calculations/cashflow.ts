@@ -51,3 +51,69 @@ export function calculateCashflow(
     costBreakdown,
   };
 }
+
+export interface CashflowYearProjection {
+  year: number;
+  rentalGrowthRate: number;
+  costGrowthRate: number;
+  netRentalIncome: number;
+  totalCosts: number;
+  mortgageRepayment: number;
+  annualCashflow: number;
+  cumulativeCashflow: number;
+}
+
+export function computeCAGR(rates: number[]): number {
+  if (rates.length === 0) return 0;
+  const product = rates.reduce((acc, rate) => acc * (1 + rate / 100), 1);
+  return (Math.pow(product, 1 / rates.length) - 1) * 100;
+}
+
+export function calculateCashflowProjection(
+  baseNetIncome: number,
+  baseTotalCosts: number,
+  annualMortgage: number,
+  rentalGrowthRates: number[],
+  costGrowthRates: number[]
+): CashflowYearProjection[] {
+  const projections: CashflowYearProjection[] = [];
+
+  const year0Cashflow = baseNetIncome - baseTotalCosts - annualMortgage;
+  projections.push({
+    year: 0,
+    rentalGrowthRate: 0,
+    costGrowthRate: 0,
+    netRentalIncome: baseNetIncome,
+    totalCosts: baseTotalCosts,
+    mortgageRepayment: annualMortgage,
+    annualCashflow: year0Cashflow,
+    cumulativeCashflow: year0Cashflow,
+  });
+
+  let currentIncome = baseNetIncome;
+  let currentCosts = baseTotalCosts;
+  let cumulative = year0Cashflow;
+
+  for (let i = 0; i < 30; i++) {
+    const rentalRate = rentalGrowthRates[i] ?? 0;
+    const costRate = costGrowthRates[i] ?? 0;
+
+    currentIncome = currentIncome * (1 + rentalRate / 100);
+    currentCosts = currentCosts * (1 + costRate / 100);
+    const annual = currentIncome - currentCosts - annualMortgage;
+    cumulative += annual;
+
+    projections.push({
+      year: i + 1,
+      rentalGrowthRate: rentalRate,
+      costGrowthRate: costRate,
+      netRentalIncome: currentIncome,
+      totalCosts: currentCosts,
+      mortgageRepayment: annualMortgage,
+      annualCashflow: annual,
+      cumulativeCashflow: cumulative,
+    });
+  }
+
+  return projections;
+}
